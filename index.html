@@ -1,0 +1,1127 @@
+<html>
+    <head>
+        <title>Two Piece</title>
+        <link rel="icon" type="image/x-icon" href="logo.jpg">
+    </head>
+    <body>
+        <h1 id="upload">Two Piece</h1>
+        <form id ="uploadForm">
+            <input type="file" id="json-file" accept=".json">
+            <input type="button" value="Upload" onclick="uploadFile()">
+        </form>
+        
+    </body>
+    <script type="text/javascript">
+        kana = "\u{3042}\u{3044}\u{3046}\u{3048}\u{304A}\u{304B}\u{304D}\u{304F}\u{3051}\u{3053}\u{3055}\u{3057}\u{3059}\u{305B}\u{305D}\u{305F}\u{3061}\u{3064}\u{3066}\u{3068}\u{306A}\u{306B}\u{306C}\u{306D}\u{306E}\u{306F}\u{3072}\u{3075}\u{3078}\u{307B}\u{307E}\u{307F}\u{3080}\u{3081}\u{3082}\u{3084}\u{3086}\u{3088}\u{3089}\u{308A}\u{308B}\u{308C}\u{308D}\u{308F}\u{3092}\u{3093}\u{304C}\u{304E}\u{3050}\u{3052}\u{3054}\u{3056}\u{3058}\u{305A}\u{305C}\u{305E}\u{3060}\u{3062}\u{3065}\u{3067}\u{3069}\u{3070}\u{3073}\u{3076}\u{3079}\u{307C}\u{3071}\u{3074}\u{3077}\u{307A}\u{307D}\u{3083}\u{3085}\u{3087}\u{3063}\u{3002}\u{300C}\u{300D}\u{30A2}\u{30A4}\u{30A6}\u{30A8}\u{30AA}\u{30AB}\u{30AD}\u{30AF}\u{30B1}\u{30B3}\u{30B5}\u{30B7}\u{30B9}\u{30BB}\u{30BD}\u{30BF}\u{30C1}\u{30C4}\u{30C6}\u{30C8}\u{30CA}\u{30CB}\u{30CC}\u{30CD}\u{30CE}\u{30CF}\u{30D2}\u{30D5}\u{30D8}\u{30DB}\u{30DE}\u{30DF}\u{30E0}\u{30E1}\u{30E2}\u{30E4}\u{30E6}\u{30E8}\u{30E9}\u{30EA}\u{30EB}\u{30EC}\u{30ED}\u{30EF}\u{30F2}\u{30F3}\u{30AC}\u{30AE}\u{30B0}\u{30B2}\u{30B4}\u{30B6}\u{30B8}\u{30BA}\u{30BC}\u{30BE}\u{30C0}\u{30C2}\u{30C5}\u{30C7}\u{30C9}\u{30D0}\u{30D3}\u{30D6}\u{30D9}\u{30DC}\u{30D1}\u{30D4}\u{30D7}\u{30DA}\u{30DD}\u{30E3}\u{30E5}\u{30E7}\u{30C3}\u{30A1}\u{30A3}\u{30A7}\u{30A9}\u{30F4}\u{30FC}";
+kana += "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?"
+
+var sentences;
+var annotated;
+annotations = [];
+
+var newWordFill = false;
+var input = [];
+
+start = 0;
+end = 0;
+var txt;
+
+var annotateTxt = "";
+var annotateUncon = "";
+var annotateReading = "";
+var annotatePart = "";
+var annotateEnglish = "";
+
+var oldJa = "";
+
+
+function uploadFile(){
+    window.onbeforeunload = function()
+    {
+        return "fuck you"
+    }
+    var fileInput = document.getElementById('json-file');
+    var file = fileInput.files[0];   
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        var data = event.target.result;
+        sentences = JSON.parse(data);
+    }
+    reader.readAsText(file);
+   
+    br = document.createElement("br");
+
+    jBox = document.createElement("div");
+    jBox.id = "jBox";
+    enBox = document.createElement("div");
+    enBox.id = "enBox";
+
+    document.body.appendChild(jBox);
+    document.body.appendChild(enBox);
+
+    textHeader = document.createElement("h1");
+    textHeader.innerHTML = "Enter Japanese Text";
+    textHeader.id = "textHeader";
+    text = document.createElement("textarea");
+    text.setAttribute("onchange","updateHighlightText()");
+    text.id = "text";
+
+    jBox.appendChild(textHeader);
+    jBox.appendChild(text);
+
+    enHeader = document.createElement("h1");
+    enHeader.innerHTML = "Enter English Translation";
+    enHeader.id = "enHeader";
+
+    en = document.createElement("textarea");
+    en.id = "en";
+    en.setAttribute("onchange","updateHighlightTextEnglish()");
+
+    displayBox = document.createElement("div");
+    displayBox.id = "displayBox";
+
+    display = document.createElement("div");
+    display.id = "display";
+
+    highlight = document.createElement("div");
+    highlight.id = "highlight";
+
+    enDisplay = document.createElement("div");
+    enDisplay.id = "enDisplay";
+
+    wordSelect = document.createElement("div");
+    wordSelect.id = "wordSelect";
+
+    defSelect = document.createElement("div");
+    defSelect.id = "defSelect";
+
+    customDef = document.createElement("div");
+    customDef.id = "customDef";
+
+    submitHeader = document.createElement("h1");
+    submitHeader.innerHTML = "Submit";
+
+    submitButton = document.createElement("input");
+    submitButton.type = "button";
+    submitButton.value = "Submit Sentences";
+    submitButton.setAttribute("onclick","submit()");
+
+    enBox.appendChild(enHeader);
+    enBox.appendChild(en);
+
+    document.body.appendChild(displayBox);
+    displayBox.appendChild(display);
+    display.appendChild(highlight);
+    displayBox.appendChild(enDisplay);
+    document.body.appendChild(wordSelect);
+    document.body.appendChild(defSelect);
+    document.body.appendChild(customDef);
+    document.body.append(submitHeader);
+    document.body.append(submitButton);
+
+    downloadHeader = document.createElement("h1");
+    downloadHeader.innerHTML = "Download JSON File";
+    downloadButton = document.createElement("input");
+    downloadButton.id = "download";
+    downloadButton.type = "button";
+    downloadButton.value = "Download";
+    downloadButton.setAttribute("onclick","downloadFile()");
+
+    document.body.appendChild(downloadHeader);
+    document.body.appendChild(downloadButton);
+
+    statsHeader = document.createElement("h1");
+    statsHeader.innerHTML = "Show Stats";
+    statsButton = document.createElement("input");
+    statsButton.type = "button"
+    statsButton.value= "Show";
+    statsButton.setAttribute("onclick","showStats()");
+
+    totalSentences = document.createElement("p");
+    totalSentences.id = "totalSentences";
+    totalWords = document.createElement("p");
+    totalWords.id = "totalWords";
+    uniqueWords = document.createElement("p");
+    uniqueWords.id= "uniqueWords";
+    uniqueKanji = document.createElement("p");
+    uniqueKanji.id = "uniqueKanji";
+
+    
+    document.body.appendChild(statsHeader);
+    document.body.appendChild(statsButton);
+    document.body.appendChild(totalSentences);
+    document.body.appendChild(totalWords);
+    document.body.appendChild(uniqueWords);
+    document.body.appendChild(uniqueKanji);
+
+    uploadHeader = document.getElementById("upload");
+    uploadForm = document.getElementById("uploadForm");
+
+    document.body.removeChild(uploadHeader);
+    document.body.removeChild(uploadForm);
+    
+    setListener();
+    
+}
+
+function submit()
+{
+    annotated = [];
+    text = document.getElementById("text");
+    enText = document.getElementById("enText");
+
+    highlight = document.getElementById("highlight");
+    en =document.getElementById("en");
+
+    rawJaSentences = highlight.innerText.split("\n");
+    rawEnSentences = enDisplay.innerText.split("\n");
+
+    highlightedWords = [];
+    if(rawEnSentences.length == rawJaSentences.length)
+    {
+        i = 0;
+        a = 0;
+        s = 0;
+        for(c of highlight.innerText)
+        {
+            if(a != annotations.length && i == annotations[a].start)
+            {
+                newWord= {word:annotations[a].word, uncon:annotations[a].uncon, reading:annotations[a].reading, part:annotations[a].part, english:annotations[a].english};
+                highlightedWords.push(newWord);
+                a++;
+            }         
+            if(c=="\n")
+            {
+                annotated.push({sentence:rawJaSentences[s],translation:rawEnSentences[s],words:highlightedWords});
+                highlightedWords = [];
+                s++;
+            }
+            i++;
+        }
+        annotated.push({sentence:rawJaSentences[s],translation:rawEnSentences[s],words:highlightedWords});
+
+        input = input.concat(annotated);
+
+        text.value = "";
+        en.value = "";
+        updateHighlightText();
+    }
+    else
+    {
+        alert("Sentences and translations don't match");
+    }
+    
+}
+
+function downloadFile(){
+    full = {};
+    full.sentences = sentences.sentences.concat(input);
+
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(full));
+    link = document.createElement("a");
+    link.innerHTML = ""
+    link.setAttribute("href", dataStr);
+    link.setAttribute("download", "twopiece.json");
+
+    document.body.appendChild(link);
+    link.click();
+    document.removeChild(link);
+    
+}
+
+function showStats()
+{
+    allSentences = sentences.sentences.concat(input);
+
+    wordList = []
+    defs = []
+    kanji= []
+    totalNumSentences = allSentences.length
+    totalNumWords = 0
+    for(s of allSentences){
+        
+        for(w of s.words)
+        {
+            totalNumWords += 1
+            if (!wordList.includes(w.uncon))
+            {               
+                wordList.push(w.uncon);
+            }
+            for(c of w.uncon)
+            {          
+                if(!kana.includes(c) && !kanji.includes(c) && !(c==' '))
+                {
+                    kanji.push(c);
+                }
+            }
+        }
+    }
+
+    numUniqueWords= wordList.length;
+    numUniqueKanji= kanji.length;
+
+    totalSentences = document.getElementById("totalSentences");
+    totalSentences.innerHTML = "Sentences: " + totalNumSentences.toString();
+    totalWords = document.getElementById("totalWords");
+    totalWords.innerHTML = "Words: " + totalNumWords.toString();
+    uniqueWords = document.getElementById("uniqueWords");
+    uniqueWords.innerHTML = "Unique Words: " + numUniqueWords.toString();
+    uniqueKanji = document.getElementById("uniqueKanji");
+    uniqueKanji.innerHTML = "Unique Kanji: " + numUniqueKanji.toString(); 
+}
+
+function updateHighlightText()
+{
+    clearCustom();
+    wordSelect = document.getElementById("wordSelect");
+    defSelect = document.getElementById("defSelect");
+    while(wordSelect.firstChild){
+        wordSelect.removeChild(wordSelect.firstChild);
+    }
+    while(defSelect.firstChild){
+        defSelect.removeChild(defSelect.firstChild);
+    }
+    enDisplay = document.getElementById("enDisplay");
+    highlight = document.getElementById("highlight");
+    display = document.getElementById("display");
+    text = document.getElementById("text");
+    enText= document.getElementById("en");
+
+    display.innerHTML = text.value;
+    enDisplay.innerHTML = enText.value;
+
+    display.appendChild(highlight);
+    highlight.innerHTML= text.value;
+
+    fixAnnotations();
+    updateHighlight();
+
+}
+
+function updateHighlightTextEnglish()
+{
+    enDisplay = document.getElementById("enDisplay");
+    highlight = document.getElementById("highlight");
+    display = document.getElementById("display");
+    text = document.getElementById("text");
+    enText= document.getElementById("en");
+
+    display.innerHTML = text.value;
+    enDisplay.innerHTML = enText.value;
+
+    display.appendChild(highlight);
+    highlight.innerHTML= text.value;
+
+    updateHighlight();
+
+}
+
+function wordDefinition()
+{
+    clearCustom();
+
+    wordSelect = document.getElementById("wordSelect");
+    newWord= document.getElementById("newWord");
+    buttons = document.getElementsByName("wordSelect");
+
+    selection = "NEW";
+    for( i of buttons)
+    {
+        if(i.checked)
+        {
+            selection = i.value;
+            break;
+        }
+    }
+
+    if(selection == "NEW")
+    {
+        selection = newWord.value;
+    }
+    else
+    {
+        newWord.value = "";
+    }
+
+    annotateUncon = selection;
+
+    defs = []
+    for(sentence of sentences.sentences)
+    {
+        for(word of sentence.words)
+        {
+            def = word.reading + "***" + word.part +"***" + word.english;           
+            if(word.uncon == selection && !defs.includes(def))
+            {
+                defs.push(def);
+            }
+        }
+    }
+    for(annotation of annotations)
+    {
+        def = annotation.reading + "***" + annotation.part +"***" + annotation.english;           
+        if(annotation.uncon == selection && !defs.includes(def))
+        {
+            defs.push(def);
+        }
+    }
+
+    defSelect = document.getElementById("defSelect");
+    while(defSelect.firstChild)
+    {
+        defSelect.removeChild(defSelect.firstChild);
+    }
+
+    defHeader = document.createElement("h2")
+    defHeader.innerHTML ="Enter the word's definition";
+    defSelect.appendChild(defHeader);
+
+    i = 0
+    radios = []
+    for(word of defs)
+    {
+        radios.push(document.createElement("input"));
+        radios[i].type = "radio";
+        radios[i].value = word;
+        radios[i].name = "defSelect"       
+        radios[i].setAttribute("onclick", "defButtonClick()")
+        label = document.createElement("label");
+        label.innerHTML = word.replace("***"," - ");
+        label.innerHTML = label.innerHTML.replace("***"," - ");
+
+        br = document.createElement("br");
+
+        defSelect.appendChild(radios[i]);
+        defSelect.appendChild(label);
+        defSelect.appendChild(br);
+
+        i+= 1
+    }
+
+    if(defs.length > 0 )
+    {
+        newDef = document.createElement("input");
+        newDef.type = "radio";
+        newDef.name = "defSelect";
+        newDef.value = "NEW";
+        newDef.setAttribute("onclick", "newDefButtonClick()")
+
+        label= document.createElement("label");
+        label.innerHTML = "New Definition";
+
+        br = document.createElement("br");
+
+        defSelect.appendChild(newDef);
+        defSelect.appendChild(label);
+        defSelect.appendChild(br);    
+    }
+    else
+    {
+        fillCustom();
+    }
+
+    for(annotation of annotations)
+    {
+        if(annotation.start == start && annotation.end == end)
+        {
+            customDef = true;
+            for(button of radios)
+            {
+                if(button.value == annotation.reading + "***" + annotation.part + "***" + annotation.english)
+                {
+                    button.checked = true;
+                    customDef = false;
+                    break;
+                }
+            }
+            if(customDef && defs.length > 0)
+            {
+                newDef.checked = true;
+                fillCustom();
+            }
+            break;
+        }
+    }
+}
+
+function fillCustom()
+{
+    customDef = document.getElementById("customDef");
+
+    clearCustom();
+
+    english = document.createElement("input");
+    english.type = "text";
+    english.setAttribute("onchange","readCustom()");
+    english.id = "customEnglish";
+    customDef.appendChild(english);
+
+    readingLabel = document.createElement("p");
+    reading = document.createElement("input");
+    reading.setAttribute("onchange","readCustom()");
+    reading.id = "customReading";
+
+    readingLabel.innerHTML = "Write the reading in hiragana or katakana";
+    reading.type = "text";
+
+    customDef.appendChild(readingLabel);
+    customDef.appendChild(reading);
+
+    partLabel = document.createElement("p");
+    part = document.createElement("select");
+    part.setAttribute("onchange","readCustom()");
+    part.id = "customPart";
+
+    partLabel.innerHTML = "Select the word's part of speech";
+
+    customDef.appendChild(partLabel);
+    customDef.appendChild(part);
+
+    none = document.createElement("option");
+    none.innerHTML = "Select part of speech";
+    none.value = "";
+    part.appendChild(none);
+
+    godan  = document.createElement("option");
+    godan.innerHTML = "Godan Verb";
+    part.appendChild(godan);
+
+    ichidan  = document.createElement("option");
+    ichidan.innerHTML = "Ichidan Verb";
+    part.appendChild(ichidan);
+
+    suru  = document.createElement("option");
+    suru.innerHTML = "Suru Verb";
+    part.appendChild(suru);
+
+    auxiliary  = document.createElement("option");
+    auxiliary.innerHTML = "Auxiliary Verb";
+    part.appendChild(auxiliary);
+
+    noun  = document.createElement("option");
+    noun.innerHTML = "Noun";
+    part.appendChild(noun);
+
+    i  = document.createElement("option");
+    i.innerHTML = "I Adjective";
+    part.appendChild(i);
+
+    na  = document.createElement("option");
+    na.innerHTML = "Na Adjective";
+    part.appendChild(na);
+
+    rentaishi  = document.createElement("option");
+    rentaishi.innerHTML = "Rentaishi Adjective";
+    part.appendChild(rentaishi);
+
+    no  = document.createElement("option");
+    no.innerHTML = "No Adjective";
+    part.appendChild(no);
+
+    counter  = document.createElement("option");
+    counter.innerHTML = "Counter";
+    part.appendChild(counter);
+
+    adverb  = document.createElement("option");
+    adverb.innerHTML = "Adverb";
+    part.appendChild(adverb);
+
+    state  = document.createElement("option");
+    state.innerHTML = "State of being";
+    part.appendChild(state);
+
+    particle  = document.createElement("option");
+    particle.innerHTML = "Particle";
+    part.appendChild(particle);
+
+    for(annotation of annotations)
+    {
+        if(annotation.start == start && annotation.end == end && !newWordFill)
+        {
+            english.value = annotation.english;
+            reading.value = annotation.reading;
+            part.value = annotation.part;
+            break;
+        }
+    }
+    onlyKana = true;
+    for(c of annotateTxt)
+    {
+        if(!kana.includes(c))
+        {
+            onlyKana = false;
+            break;
+        }
+    }
+    if(onlyKana)
+    {
+        reading.value = annotateTxt;
+    }
+
+}
+
+function clearCustom()
+{
+    buttons = document.getElementsByName("defSelect");
+    newDef = document.getElementById("newDef");
+    
+    selection = "NEW";
+    for(i of buttons)
+    {
+        if(i.checked)
+        {
+            selection = i.value;
+            break;
+        }
+    }
+
+    if(selection == "NEW")
+    {
+        annotateReading = "";
+        annotatePart = "";
+        annotateEnglish = "";
+    }
+    else{
+        def = selection;
+        defComponents = def.split("***");
+        
+        annotateReading = defComponents[0];
+        annotatePart = defComponents[1];
+        annotateEnglish = defComponents[2];
+    }
+
+    customDef = document.getElementById("customDef");
+    while(customDef.firstChild){
+        customDef.removeChild(customDef.firstChild);
+    }
+}
+
+function addAnnotation()
+{    
+    annotation = {"word":annotateTxt,"uncon":annotateUncon,"reading":annotateReading,"part":annotatePart,"english":annotateEnglish,"start":start,"end":end};
+    for(i = 0; i<annotations.length; i++)
+    {
+        if(annotations[i].start == start && annotations[i].end == end)
+        {
+            annotations[i] = annotation;
+            updateHighlight();
+            return;
+        }
+    }
+
+    if(annotations.length == 0)
+    {
+        annotations.push(annotation); 
+    }
+    else if(annotation.start > annotations[annotations.length-1].start)
+    {
+        annotations.push(annotation);
+    }
+    else if(annotation.start < annotations[0].start)
+    {
+        annotations.unshift(annotation)
+    }
+    else
+    {
+        for(i = 1;i<annotations.length;i++)
+        {
+            if(annotations[i-1].start < annotation.start && annotations[i].start > annotation.start)
+            {
+                annotations.splice(i,0,annotation);
+            }
+        }
+    }
+
+    updateHighlight();
+}
+
+function readCustom()
+{
+    reading = document.getElementById("customReading"); 
+    part = document.getElementById("customPart");
+    english = document.getElementById("customEnglish");
+
+    annotateReading = reading.value;
+    annotatePart = part.value;
+    annotateEnglish = english.value;
+
+    addAnnotation();
+}
+
+function defButtonClick()
+{
+    newwordFill= false;
+    clearCustom();
+    addAnnotation();
+}
+
+function newDefButtonClick()
+{
+    newWordFill = true;
+    fillCustom();
+    addAnnotation();
+}
+
+function modifyWordChoice()
+{
+    newWordFill = false;
+    wordDefinition();
+    addAnnotation();
+}
+
+function newWordChoice()
+{
+    newWordFill= true;
+    wordDefinition();
+    addAnnotation();
+}
+
+function deleteAnnotation()
+{
+    customPart = document.getElementById("customPart");
+    customReading = document.getElementById("customReading");
+    customEnglish = document.getElementById("customEnglish");
+    newWord = document.getElementById("newWord");
+
+    if(customPart != null)
+    {
+        customPart.value = "";
+    }
+    if(customReading != null)
+    {
+        customReading.value = "";
+    }
+    if(customEnglish != null)
+    {
+        customEnglish.value = "";
+    }
+    if(newWord != null)
+    {
+        newWord.value = "";
+    }
+
+    defs = document.getElementsByName("defSelect");
+    words = document.getElementsByName("wordSelect");
+
+    for(x of defs)
+    {
+        x.checked = false;
+    }
+    for(x of words)
+    {
+        x.checked = false;
+    }
+    
+    for(i = 0; i < annotations.length; i++)
+    {
+        if(annotations[i].start == start && annotations[i].end == end)
+        {
+            annotations.splice(i,1);
+        }
+    }
+
+    wordDefinition();
+    updateHighlight();
+
+}
+
+function updateHighlight()
+{
+    display = document.getElementById("display");
+    highlight = document.getElementById("highlight");
+    text = highlight.innerHTML;
+
+    if(annotations.length > 0)
+    {
+        highlightColor = color(annotations[0].part);
+        newText = text.substring(0,annotations[0].start) + "<mark style='background-color:"+ highlightColor + "'>" + text.substring(annotations[0].start,annotations[0].end) + "</mark>";
+        for(i = 1; i < annotations.length; i++)
+        {
+            highlightColor = color(annotations[i].part);
+            newText += text.substring(annotations[i-1].end, annotations[i].start) + "<mark style='background-color:"+ highlightColor + "'>" + text.substring(annotations[i].start, annotations[i].end) +"</mark>";
+        }
+        newText += text.substring(annotations[annotations.length-1].end);
+        text = newText;
+    }
+    
+    display.innerHTML = text + display.innerHTML.substring(display.innerHTML.indexOf("<div"));
+    setListener();
+}
+
+function setListener()
+{
+    document.getElementById('highlight').addEventListener('mouseup',function(e)
+    {   
+        txt = this.innerText;
+        var selection = window.getSelection();
+        start = selection.anchorOffset;
+        end = selection.focusOffset;
+
+        if(start > end)
+        {
+            temp = start;
+            start = end;
+            end = temp;
+        }
+
+        valid = true;
+        for(annotation of annotations)
+        {
+            if(start < annotation.start && end >= annotation.end)
+            {
+                valid = false;
+                break;
+            }
+            if(start <= annotation.start && end > annotation.end)
+            {
+                valid = false;
+                break;
+            }
+            if(start > annotation.start && end < annotation.end)
+            {
+                valid = false;
+                break;
+            }
+            if(start > annotation.start && start < annotation.end)
+            {
+                valid = false;
+                break;
+            }
+            if(end > annotation.start && end < annotation.end)
+            {
+                valid = false;
+                break;
+            }
+        }
+
+        highlight = document.getElementById("highlight");
+        text = highlight.innerHTML;
+
+    
+        if(valid)
+        {
+            clearCustom();
+            wordHeader = document.createElement("h2");
+            wordHeader.innerHTML = "Word Info";
+            wordHeader.id = "wordHeader";
+
+            deleteAnnotationButton = document.createElement("input");
+            deleteAnnotationButton.type = "button";
+            deleteAnnotationButton.value = "Delete Annotation";
+            deleteAnnotationButton.setAttribute("onclick","deleteAnnotation()");
+        
+            wordSample = document.createElement("p");
+            wordSample.id = "word";
+            wordSample.id = "wordSample";
+
+            defSelect = document.getElementById("defSelect");
+            while(wordSelect.firstChild){
+                wordSelect.removeChild(wordSelect.firstChild);
+            }
+            while(defSelect.firstChild){
+                defSelect.removeChild(defSelect.firstChild);
+            }
+
+
+            annotateTxt = txt.substring(start,end);
+            annotateUncon = "";
+            wordSample.innerHTML = "<b>"+selection+"</b>"
+
+            if(selection != "")
+            {
+                wordSelect.appendChild(wordHeader);
+                wordSelect.appendChild(deleteAnnotationButton);
+                wordSelect.appendChild(br);
+                wordSelect.appendChild(wordSample);
+
+                words = []
+                readings = []
+                uncons = []
+
+                options = []
+
+                for(sentence of sentences.sentences)
+                {
+                    for(word of sentence.words)
+                    {
+                        if((word.uncon == annotateTxt || word.word == annotateTxt || word.reading == annotateTxt) && !(words.includes(annotateTxt) || uncons.includes(annotateTxt) || readings.includes(annotateTxt)))
+                        {
+                            options.push(word);
+
+                            words.push(word.word);
+                            readings.push(word.reading);
+                            uncons.push(word.uncon);
+                        }
+                    }
+                }
+                for(annotation of annotations)
+                {
+                    if((annotation.uncon == annotateTxt || annotation.word == annotateTxt || annotation.reading == annotateTxt) && !(words.includes(annotateTxt) || uncons.includes(annotateTxt) || readings.includes(annotateTxt)))
+                    {
+                        options.push(annotation);
+
+                        words.push(annotation.word);
+                        readings.push(annotation.reading);
+                        uncons.push(annotation.uncon);
+                    }
+                }
+                if(!uncons.includes(annotateTxt))
+                {
+                    options.push({"uncon":annotateTxt});
+                }
+
+                i = 0
+                radios = []
+                for(word of options)
+                {
+                    radios.push(document.createElement("input"));
+                    radios[i].type = "radio";
+                    radios[i].value = word.uncon;
+                    radios[i].name = "wordSelect"
+                    radios[i].setAttribute("onclick", "modifyWordChoice()")
+                    label = document.createElement("label");
+                    label.innerHTML = word.uncon;
+
+                    br = document.createElement("br");
+
+                    wordSelect.appendChild(radios[i]);
+                    wordSelect.appendChild(label);
+                    wordSelect.appendChild(br);
+
+                    i+= 1
+                }
+                if(options.length > 0 )
+                {
+                    newWord = document.createElement("input");
+                    newWord.type = "radio";
+                    newWord.name = "wordSelect";
+                    newWord.value = "NEW";
+                    newWord.setAttribute("onclick", "newWordChoice()")
+
+                    label= document.createElement("label");
+                    label.innerHTML = "New Word";
+
+                    br = document.createElement("br");
+
+                    wordSelect.appendChild(newWord);
+                    wordSelect.appendChild(label);
+                    wordSelect.appendChild(br);
+                }
+                else
+                {
+                    defLabel = document.createElement("p");
+                    defLabel.innerHTML = "Write the word as it would appear in a dictionary";
+
+                    wordSelect.appendChild(defLabel);
+                    
+                }
+                def = document.createElement("input");
+                def.id = "newWord";
+                def.setAttribute("onchange","modifyWordChoice()");
+                wordSelect.appendChild(def)
+
+                for(annotation of annotations)
+                {
+                    if(annotation.start == start && annotation.end == end)
+                    {
+                        customWord = true;
+                        for(button of radios)
+                        {
+                            if(button.value == annotation.uncon)
+                            {
+                                button.checked = true;
+                                customWord = false;
+                                break;
+                            }
+                        }
+                        if(customWord)
+                        {
+                            newWord.checked = true;
+                            def.value = annotation.uncon;
+                        }
+                        break;
+                    }
+                }
+
+                wordDefinition();
+            }
+        }
+        
+    });
+}
+
+function color(part)
+{
+    if(part == "")
+    {
+        return "light grey";
+    }
+    else if(part == "Godan Verb")
+    {
+        return "rgb(255, 255, 77)";
+    }
+    else if(part == "Ichidan Verb")
+    {
+        return "rgb(255, 193, 77)";
+    }
+    else if(part == "Suru Verb")
+    {
+        return "orange";
+    }
+    else if(part == "Auxiliary Verb")
+    {
+        return "rgb(255, 77, 77)";
+    }
+    else if(part == "Noun")
+    {
+        return "rgb(130, 255, 130)";
+    }
+    else if(part == "I Adjective")
+    {
+        return "rgb(255, 77, 255)";
+    }
+    else if(part == "Na Adjective")
+    {
+        return "rgb(168, 98, 234) ";
+    }
+    else if(part == "Rentaishi Adjective")
+    {
+        return "rgb(150, 150, 255)";
+    }
+    else if(part == "No Adjective")
+    {
+        return "rgb(77, 255, 77)";
+    }
+    else if(part == "Counter")
+    {
+        return "grey";
+    }
+    else if(part == "Adverb")
+    {
+        return "rgb(179, 179, 0)";
+    }
+    else if(part == "State of being")
+    {
+        return "rgb(255, 0, 0)";
+    }
+    else if(part == "Particle")
+    {
+        return "pink";
+    }
+}
+
+function fixAnnotations()
+{
+
+    highlight = document.getElementById("highlight");
+    newJa = highlight.innerHTML;
+
+    newLen = newJa.length;
+    oldLen = oldJa.length;
+    change = newLen - oldLen;
+    endBreak = newLen-1;
+    
+    for(i = newLen-1; i >= 0; i--)
+    {
+        endBreak = i;
+        if(oldJa[i-change] != newJa[i])
+        {
+            break;
+        }
+    }
+    startBreak = 0;
+    for(i = 0; i<newLen; i++)
+    {
+        startBreak = i;
+        if(oldJa[i] != newJa[i])
+        {
+            break;
+        }
+    }
+    
+    for(i = 0; i < annotations.length; i++)
+    {
+        if(annotations[i].start > endBreak-change)
+        {
+            annotations[i].start += change;
+            annotations[i].end += change;
+        }
+        else if(!(annotations[i].end <= startBreak))
+        {
+            annotations[i].start = 0;
+            annotations[i].end = 0;
+        }
+    }
+
+    for(i = 0; i < annotations.length; i++)
+    {
+        if(annotations[i].start == 0 && annotations[i].end == 0)
+        {
+            annotations.splice(i,1);
+        }
+    }
+    oldJa = highlight.innerHTML;
+}
+
+
+    </script>
+    <script type="text/javascript">
+        window.onbeforeunload = function()
+        {
+            return "fuck you"
+        }
+    </script>
+</html>
+
+<style>
+    #highlight{
+        position: absolute;
+        top: 0;
+        width: 50%;
+        height: 0;
+        z-index:100;
+        user-select:text;
+        white-space: pre-line;
+        
+    }
+    #display{
+        user-select: none;
+        margin: 0 auto;
+        position: relative;
+        white-space: pre-line;
+        display: inline-block;
+        vertical-align: top;
+        width:50%;
+    }
+    #enDisplay
+    {
+        white-space: pre-line;
+        display: inline-block;
+        vertical-align: top;
+        width: 50%;
+    }
+    #jBox{
+        display: inline-block;
+        width: 50%;
+        vertical-align: top;
+    }
+    #enBox{
+        display: inline-block;
+        width: 50%;
+        vertical-align: top;
+    }
+    textarea
+    {
+        resize: vertical;
+        width: 100%;
+    }
+    #displayBox
+    {
+        padding-top:15px;
+        padding-bottom:15px;
+        width: 100%;
+        height: auto;
+        font-size: 15px;
+        line-height: 20px;
+    }
+</style>
